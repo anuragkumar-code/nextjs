@@ -5,11 +5,21 @@ import { CreateCustomer } from '@/app/ui/customers/buttons';
 import { lusitana } from '@/app/ui/fonts';
 import { CustomersTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
-import { fetchCustomers } from '@/app/lib/data';
+import { fetchFilteredCustomers } from '@/app/lib/data';
  
-export default async function Page() {
+export default async function Page({
+  searchParams,
+  }: {
+    searchParams?: {
+      query?: string;
+      page?: string;
+    };
+  }) {
 
-    const customers = await fetchCustomers();
+    const query = searchParams?.query || '';
+    const currentPage = Number(searchParams?.page) || 1;
+
+    const customers = await fetchFilteredCustomers(query);
 
     return (
       <div className="w-full">
