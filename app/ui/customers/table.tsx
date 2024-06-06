@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { lusitana } from '@/app/ui/fonts';
+import { fetchFilteredCustomers } from '@/app/lib/data';
 
 import {
   CustomersTableType,
@@ -7,10 +8,15 @@ import {
 } from '@/app/lib/definitions';
 
 export default async function CustomersTable({
-  customers,
+  query,
+  currentPage,
 }: {
-  customers: FormattedCustomersTable[];
+  query: string;
+  currentPage: number;
 }) {
+
+  const customers = await fetchFilteredCustomers(query);
+
   return (
     <div className="w-full">
       <div className="mt-6 flow-root">

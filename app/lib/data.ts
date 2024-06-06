@@ -83,7 +83,7 @@ export async function fetchCardData() {
   }
 }
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 5;
 export async function fetchFilteredInvoices(
   query: string,
   currentPage: number,
@@ -112,7 +112,6 @@ export async function fetchFilteredInvoices(
       ORDER BY invoices.date DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
-
     return invoices.rows;
   } catch (error) {
     console.error('Database Error:', error);
@@ -168,18 +167,23 @@ export async function fetchInvoiceById(id: string) {
   }
 }
 
-export async function fetchCustomers() {
+export async function fetchCustomers(query: string) {
   try {
-    const data = await sql<CustomerField>`
-      SELECT
-        id,
-        name
+    const count = await sql`SELECT
+      COUNT(*)
       FROM customers
-      ORDER BY name ASC
+		  LEFT JOIN invoices ON customers.id = invoices.customer_id
+		  WHERE
+		  customers.name ILIKE ${`%${query}%`} OR
+      customers.email ILIKE ${`%${query}%`}
+		  GROUP BY customers.id, customers.name, customers.email, customers.image_url
+		  ORDER BY customers.name ASC
+
     `;
 
-    const customers = data.rows;
-    return customers;
+    
+    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+    return totalPages;
   } catch (err) {
     console.error('Database Error:', err);
     throw new Error('Failed to fetch all customers.');
